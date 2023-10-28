@@ -10,3 +10,7 @@ bd_config = {
 # folder where the files to be read are located
 
 folder = "path/to/your/folder"
+
+# List of extensions used to filter file types
+
+target_extensions = ['.csv','.xls', '.xlsx']

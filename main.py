@@ -1,50 +1,77 @@
 import os
 import mysql.connector
 import parameters as params
-import time 
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+import re  # Importe o módulo 're' para trabalhar com expressões regulares
+import logging
+import pandas as pd 
 
 
 
+logger = logging.getLogger('data_ingestion')
+logger.setLevel(logging.INFO)
+log_handler = logging.StreamHandler()
+log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+log_handler.setFormatter(log_formatter)
+logger.addHandler(log_handler)
 
-class MonitorDirectory(FileSystemEventHandler):
-    def on_created (self, event):
-        if event.is_directory:
-            return
-        elif any(event.src_path.endswith(ext) for ext in params.target_extensions):
-            print(f"New file found: {event.src_path}")
-            # Place the data ingestion code here
-            ingest_data(event.src_path)
+def sanitize_table_name(name):
+    return re.sub(r'[^a-zA-Z0-9]', '_', name)
+
+def convert_xlsx_to_csv(xlsx_file):
+    # Use pandas para ler o arquivo XLSX e converter em CSV
+    df = pd.read_excel(xlsx_file)
+    csv_file = os.path.splitext(xlsx_file)[0] + ".csv"
+    df.to_csv(csv_file, index=False)
+
+    return csv_file
 
 def ingest_data(file):
     try:
-        # Establishes connection to the database
-        connection = mysql.connector.connect(**params.bd_config)
+        if file.endswith(".xlsx"):
+            # Convert the XLSX file to CSV
+            csv_file = convert_xlsx_to_csv(file)
 
-        # Creates a cursor
-        cursor = connection.cursor()
+            # Establish connection to the database
+            connection = mysql.connector.connect(**params.bd_config)
 
-        # Gets the file name without the extension
-        table_name = os.path.splitext(os.path.basename(file))[0]
+            # Create a cursor
+            cursor = connection.cursor()
 
-        # Create a table in the database with the same name as the file 
-        cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name} (column VARCHAR(255))")
+            # Get the file name without the extension
+            file_name = os.path.splitext(os.path.basename(csv_file))[0]
 
-        # Open the file for reading
-        with open(file, "r") as file:
-            # Performs data insertion into the database
-            for line in file:
-                sql = f"INSERT INTO {table_name} (column) VALUES (%s)"
-                cursor.execute(sql, (line.strip(),))
+            # Create a sanitized table name
+            table_name = sanitize_table_name(file_name)
 
-        # Commit the changes
-        connection.commit()
-        print(f"Ingestion of file {file} completed successfully!")
+            # Check if the table already exists
+            cursor.execute(f"SHOW TABLES LIKE '{table_name}'")
+            result = cursor.fetchone()
+
+            if result:
+                logger.info(f"Table '{table_name}' already exists. Deleting the old table...")
+                # Delete the existing table
+                cursor.execute(f"DROP TABLE {table_name}")
+
+            # Create a new table in the database with the sanitized name
+            create_table_query = f"CREATE TABLE {table_name} (data VARCHAR(255))"
+            cursor.execute(create_table_query)
+
+            # Open the CSV file for reading
+            with open(csv_file, "r", encoding="utf-8") as file:
+                for line in file:
+                    sql = f"INSERT INTO {table_name} (data) VALUES (%s)"
+                    cursor.execute(sql, (line.strip(),))
+
+            # Commit the changes
+            connection.commit()
+            logger.info(f"Ingestion of file {csv_file} completed successfully!")
 
     except mysql.connector.Error as error:
-        print(f"Error: {error}")
-    
+        logger.error(f"Error: {error}")
+
+    except Exception as e:
+        logger.error(f"Error: {e}")
+
     finally:
         # Close the cursor and connection
         if 'cursor' in locals():
@@ -53,15 +80,12 @@ def ingest_data(file):
             connection.close()
 
 if __name__ == "__main__":
-        event_handler = MonitorDirectory()
-        observer = Observer()
-        observer.schedule(event_handler, params.folder, recursive=True)
-        observer.start()
 
-        try:
-             print(f"Monitoring folder: {params.folder}")
-             while True:
-                  time.sleep(1)
-        except KeyboardInterrupt:
-             observer.stop()
-        observer.join()
+    # List all files in the folder
+    files = [os.path.join(params.folder, f) for f in os.listdir(params.folder) if os.path.isfile(os.path.join(params.folder, f))]
+
+    # Ingest each file in the folder
+    for file in files:
+        if any(file.endswith(ext) for ext in params.target_extensions):
+            logger.info(f"Ingesting file: {file}")
+            ingest_data(file)

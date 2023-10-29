@@ -14,7 +14,7 @@ Before you begin using the project, ensure that you have the following pre-requi
 
 To use the data ingestion script for MariaDB, follow these steps:
 
-1. Create `parameters.py`: Create a file named `parameters.py` and define the connection parameters for your MariaDB database. The `parameters.py` file should contain a dictionary named `bd_config` with the required connection details. Here's an example of what this file might look like:
+1. **Create `parameters.py`:** Create a file named `parameters.py` and define the connection parameters for your MariaDB database. The `parameters.py` file should contain a dictionary named `bd_config` with the required connection details. Here's an example of what this file might look like:
 
     ```python
     # parameters.py
@@ -30,7 +30,7 @@ To use the data ingestion script for MariaDB, follow these steps:
 
     Replace `'your_username'`, `'your_password'`, `'localhost'`, `'your_database'`, and `'path_to_folder_with_text_files'` with your MariaDB credentials and the folder containing the text files you want to ingest.
 
-2. Create a `requirements.txt` file with the necessary library dependencies by running the following commands:
+2. **Create a `requirements.txt` file:** Create a `requirements.txt` file with the necessary library dependencies by running the following commands:
 
     ```bash
     echo "watchdog==2.1.6" > requirements.txt
@@ -43,7 +43,7 @@ To use the data ingestion script for MariaDB, follow these steps:
     pip install -r requirements.txt
     ```
 
-3. Run the script: Execute the main Python script to start monitoring the specified folder for new files and ingesting data into your MariaDB database.
+3. **Run the script:** Execute the main Python script to start monitoring the specified folder for new files and ingesting data into your MariaDB database.
 
 ## Contributing 🤝
 

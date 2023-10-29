@@ -1,7 +1,7 @@
 import os
 import mysql.connector
 import parameters as params
-import re  # Importe o módulo 're' para trabalhar com expressões regulares
+import re
 import logging
 import pandas as pd 
 
@@ -18,7 +18,7 @@ def sanitize_table_name(name):
     return re.sub(r'[^a-zA-Z0-9]', '_', name)
 
 def convert_xlsx_to_csv(xlsx_file):
-    # Use pandas para ler o arquivo XLSX e converter em CSV
+    # Use pandas to read XLSX file and convert to CSV    
     df = pd.read_excel(xlsx_file)
     csv_file = os.path.splitext(xlsx_file)[0] + ".csv"
     df.to_csv(csv_file, index=False)

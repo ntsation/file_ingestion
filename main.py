@@ -1,13 +1,13 @@
 import os
 import mysql.connector
-import parameters as params
+import parametros
 import re
 import logging
 import pandas as pd
 import csv
 
-# Logger configuration to save to a file
-logger = logging.getLogger('data_ingestion')
+# Configuração do logger para salvar em um arquivo
+logger = logging.getLogger('ingestao_dados')
 logger.setLevel(logging.INFO)
 log_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log.txt')
 log_handler = logging.FileHandler(log_file_path)
@@ -15,81 +15,82 @@ log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(me
 log_handler.setFormatter(log_formatter)
 logger.addHandler(log_handler)
 
-def normalize_table_name(name):
-    return re.sub(r'[^a-zA-Z0-9]', '_', name)
 
-def normalize_column_name(column_name):
-    return re.sub(r'[^a-zA-Z0-9]', '_', column_name.lower())
+def normaliza_tabela(nome):
+    return re.sub(r'[^a-zA-Z0-9]', '_', nome)
+
+def normaliza_coluna(nome_coluna):
+    return re.sub(r'[^a-zA-Z0-9]', '_', nome_coluna.lower())
 
 
-def detect_csv_delimiter(file):
-    delimiters = [',', ';'] 
+def detecta_delimitador(arquivo):
+    delimitadores = [',', ';'] 
 
     with open(file, 'r', encoding='utf-8') as f:
-        first_line = f.readline()
+        primeira_linha = f.readline()
 
-        for delimiter in delimiters:
-            if delimiter in first_line:
-                return delimiter
+        for delimitador in delimitadores:
+            if delimitador in primeira_linha:
+                return delimitador
 
-    logger.warning("Unable to detect CSV delimiter. Using default delimiter: ','")
+    logger.warning("Não foi possível detectar o delimitador CSV. Usando delimitador padrão : ','")
     return ','
 
 
-# Function for data ingestion
-def ingest_data(file):
+# Função para ingestão de dados
+def ingestao_dados(arquivo):
     try:
-        delimiter = detect_csv_delimiter(file)
-        connection = mysql.connector.connect(**params.bd_config)
-        cursor = connection.cursor()
-        file_name = os.path.splitext(os.path.basename(file))[0]
-        table_name = normalize_table_name(file_name)
-        cursor.execute(f"SHOW TABLES LIKE '{table_name}'")
-        result = cursor.fetchone()
+        delimitador = detecta_delimitador(file)
+        conexao = mysql.connector.connect(**parametros.bd_config)
+        cursor = conexao.cursor()
+        nome_arquivo = os.path.splitext(os.path.basename(arquivo))[0]
+        nome_tabela = normaliza_tabela(nome_arquivo)
+        cursor.execute(f"SHOW TABLES LIKE '{nome_tabela}'")
+        resultado = cursor.fetchone()
 
-        if result:
-            logger.info(f"Table '{table_name}' already exists. Deleting the old table...")
-            cursor.execute(f"DROP TABLE {table_name}")
+        if resultado:
+            logger.info(f"A tabela '{nome_tabela}' já existe. Excluindo a tabela antiga...")
+            cursor.execute(f"DROP TABLE {nome_tabela}")
 
-        with open(file, "r", encoding="utf-8") as csvfile:
-            csv_reader = csv.reader(csvfile, delimiter=delimiter)
-            header = next(csv_reader) 
+        with open(arquivo, "r", encoding="utf-8") as arquivo_csv:
+            ler_csv = csv.reader(arquivo_csv, delimiter=delimitador)
+            header = next(ler_csv) 
 
-            logger.info(f"Detected CSV delimiter: '{delimiter}'")
-            logger.info(f"CSV Header: {header}")
+            logger.info(f"Delimitador CSV detectado: '{delimitador}'")
+            logger.info(f"Cabeçalho: {header}")
 
-            normalized_header = [normalize_column_name(column) for column in header]
+            normaliza_header = [normaliza_coluna(coluna) for coluna in header]
 
-            create_table_query = f"CREATE TABLE {table_name} ({', '.join([f'{column} VARCHAR(255)' for column in normalized_header])})"
-            logger.info(f"Executing SQL: {create_table_query}")
-            cursor.execute(create_table_query)
-            logger.info("Table creation complete.")
+            cria_tabela_query = f"CREATE TABLE {nome_tabela} ({', '.join([f'{coluna} VARCHAR(255)' for coluna in normaliza_header])})"
+            logger.info(f"Executando SQL: {cria_tabela_query}")
+            cursor.execute(cria_tabela_query)
+            logger.info("Criação de tabela concluída.")
 
-            for row in csv_reader:
-                columns = ', '.join(normalized_header)
-                values = ', '.join(['%s'] * len(normalized_header))
-                sql = f"INSERT INTO {table_name} ({columns}) VALUES ({values})"
-                cursor.execute(sql, tuple(row))
+            for linha in ler_csv:
+                colunas = ', '.join(normaliza_header)
+                valores = ', '.join(['%s'] * len(normaliza_header))
+                sql = f"INSERT INTO {nome_tabela} ({colunas}) VALUES ({valores})"
+                cursor.execute(sql, tuple(linha))
 
-        connection.commit()
-        logger.info(f"Ingestion of file {file} completed successfully!")
+        conexao.commit()
+        logger.info(f"Ingestão do arquivo {file} concluído com sucesso!")
 
     except mysql.connector.Error as error:
-        logger.error(f"MySQL Error: {error}")
+        logger.error(f"Erro MySQL: {error}")
 
     except Exception as e:
-        logger.error(f"Error: {e}")
+        logger.error(f"Erro: {e}")
 
     finally:
         if 'cursor' in locals():
             cursor.close()
-        if 'connection' in locals() and connection.is_connected():
-            connection.close()
+        if 'connection' in locals() and conexao.is_connected():
+            conexao.close()
 
 
 if __name__ == "__main__":
-    files = [os.path.join(params.folder, f) for f in os.listdir(params.folder) if os.path.isfile(os.path.join(params.folder, f))]
-    for file in files:
-        if any(file.endswith(ext) for ext in params.target_extensions):
-            logger.info(f"Ingesting file: {file}")
-            ingest_data(file)
+    arquivos = [os.path.join(parametros.pasta, f) for f in os.listdir(parametros.pasta) if os.path.isfile(os.path.join(parametros.pasta, f))]
+    for arquivo in arquivos:
+        if any(arquivo.endswith(ext) for ext in parametros.extensoes):
+            logger.info(f"Ingerindo arquivo: {arquivo}")
+            ingestao_dados(arquivo)

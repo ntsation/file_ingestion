@@ -1,6 +1,6 @@
-# Projeto de ingestão de arquivos de banco de dados MariaDB 🐍📁
+# Projeto de ingestão de arquivos de banco de dados 🐍📁
 
-Este repositório contém código Python para ingerir arquivos em um banco de dados MARIADB.O projeto visa facilitar o carregamento de dados de vários formatos de arquivo, como CSV ou Excel, em um banco de dados MariaDB.
+Este repositório contém código Python para ingerir arquivos em um banco de dados MARIADB.O projeto visa facilitar o carregamento de dados de vários formatos de arquivo, como CSV ou Excel, em um banco de dados.
 
 ## Pré-requisitos 📋
 
@@ -8,11 +8,11 @@ Antes de começar a usar o projeto, verifique se você possui os seguintes pré-
 
 - Python 3.x
 - Bibliotecas Python Necessárias (Listadas em 'requirements.txt')
-- Instale e configure o MariaDB
+- Instale e configure o Banco de dados.
 
 ## Uso 🚀
 
-Para usar o script de ingestão de dados para o MariaDB, siga estas etapas:
+Para usar o script de ingestão de dados para o Banco de dados, siga estas etapas:
 
 1. **`parameters.py`:** Modifique o arquivo chamado `parameters.py` e defina os parâmetros de conexão para o seu banco de dados. O `parametros.py` deve conter um dicionário nomeado `bd_config` com os detalhes de conexão necessários.Aqui está um exemplo de como esse parâmetro pode ser:
 

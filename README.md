@@ -14,21 +14,21 @@ Antes de começar a usar o projeto, verifique se você possui os seguintes pré-
 
 Para usar o script de ingestão de dados para o MariaDB, siga estas etapas:
 
-1. **`parameters.py`:** Modifique o arquivo chamado `parameters.py` e defina os parâmetros de conexão para o seu banco de dados. O `parameters.py` deve conter um dicionário nomeado `bd_config` com os detalhes de conexão necessários.Aqui está um exemplo de como esse parâmetro pode ser:
+1. **`parameters.py`:** Modifique o arquivo chamado `parameters.py` e defina os parâmetros de conexão para o seu banco de dados. O `parametros.py` deve conter um dicionário nomeado `bd_config` com os detalhes de conexão necessários.Aqui está um exemplo de como esse parâmetro pode ser:
 
     ```python
-    # parameters.py
+    # parametros.py
     bd_config = {
-        'user': 'your_username',
-        'password': 'your_password',
-        'host': 'localhost',
-        'database': 'your_database',
+        "host": "SEU_HOST",
+        "user": "SEU_USUÁRIO",
+        "password": "SUA_SENHA",
+        "database": "NOME_DATABASE"
     }
 
-    folder = 'path_to_folder_with_text_files'
+    pasta = 'caminho_da_pasta_com_arquivos'
     ```
 
-    Substitua `'your_username'`, `'your_password'`, `'localhost'`, `'your_database'`, e `'path_to_folder_with_text_files'` com suas credenciais de MariaDB e a pasta que contém os arquivos de texto que você deseja ingerir.
+    Substitua `'SEU_USUÁRIO'`, `'SUA_SENHA'`, `'SEU_HOST'`, `'NOME_DATABASE'`, e `'caminho_da_pasta_com_arquivos'` com suas credenciais de MariaDB e a pasta que contém os arquivos de texto que você deseja ingerir.
 
 2. **`requirements.txt`** O arquivo `requirements.txt` contem as dependências necessárias da biblioteca, você pode instalar o usando `pip`:
 

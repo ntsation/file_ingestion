@@ -3,7 +3,6 @@ import mysql.connector
 import parametros
 import re
 import logging
-import pandas as pd
 import csv
 
 # Configuração do logger para salvar em um arquivo
@@ -26,7 +25,7 @@ def normaliza_coluna(nome_coluna):
 def detecta_delimitador(arquivo):
     delimitadores = [',', ';'] 
 
-    with open(file, 'r', encoding='utf-8') as f:
+    with open(arquivo, 'r', encoding='utf-8') as f:
         primeira_linha = f.readline()
 
         for delimitador in delimitadores:
@@ -40,7 +39,7 @@ def detecta_delimitador(arquivo):
 # Função para ingestão de dados
 def ingestao_dados(arquivo):
     try:
-        delimitador = detecta_delimitador(file)
+        delimitador = detecta_delimitador(arquivo)
         conexao = mysql.connector.connect(**parametros.bd_config)
         cursor = conexao.cursor()
         nome_arquivo = os.path.splitext(os.path.basename(arquivo))[0]
@@ -73,7 +72,7 @@ def ingestao_dados(arquivo):
                 cursor.execute(sql, tuple(linha))
 
         conexao.commit()
-        logger.info(f"Ingestão do arquivo {file} concluído com sucesso!")
+        logger.info(f"Ingestão do arquivo {arquivo} concluído com sucesso!")
 
     except mysql.connector.Error as error:
         logger.error(f"Erro MySQL: {error}")

@@ -10,4 +10,4 @@ bd_config = {
 pasta = "path/to/your/folder"
 
 # Lista de extensões usadas para filtrar tipos de arquivos
-extensoes = ['.csv','.xls', '.xlsx']
+extensoes = ['.csv', '.xls', '.xlsx']

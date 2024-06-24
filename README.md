@@ -1,6 +1,6 @@
 # Projeto de ingestão de arquivos de banco de dados 🐍📁
 
-Este repositório contém código Python para ingerir arquivos em um banco de dados MARIADB.O projeto visa facilitar o carregamento de dados de vários formatos de arquivo, como CSV ou Excel, em um banco de dados.
+Este repositório contém código Python para ingerir arquivos em um banco de dados MariaDB.O projeto visa facilitar o carregamento de dados de vários formatos de arquivo, como CSV ou Excel, em um banco de dados.
 
 ## Pré-requisitos 📋
 

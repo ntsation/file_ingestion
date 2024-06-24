@@ -8,9 +8,11 @@ import csv
 # Configuração do logger para salvar em um arquivo
 logger = logging.getLogger('ingestao_dados')
 logger.setLevel(logging.INFO)
-log_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log.txt')
+log_file_path = os.path.join(os.path.dirname(
+    os.path.abspath(__file__)), 'log.txt')
 log_handler = logging.FileHandler(log_file_path)
-log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+log_formatter = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 log_handler.setFormatter(log_formatter)
 logger.addHandler(log_handler)
 
@@ -18,12 +20,13 @@ logger.addHandler(log_handler)
 def normaliza_tabela(nome):
     return re.sub(r'[^a-zA-Z0-9]', '_', nome)
 
+
 def normaliza_coluna(nome_coluna):
     return re.sub(r'[^a-zA-Z0-9]', '_', nome_coluna.lower())
 
 
 def detecta_delimitador(arquivo):
-    delimitadores = [',', ';'] 
+    delimitadores = [',', ';']
 
     with open(arquivo, 'r', encoding='utf-8') as f:
         primeira_linha = f.readline()
@@ -33,6 +36,7 @@ def detecta_delimitador(arquivo):
                 return delimitador
 
     logger.warning("Não foi possível detectar o delimitador CSV. Usando delimitador padrão : ','")
+
     return ','
 
 
@@ -48,19 +52,21 @@ def ingestao_dados(arquivo):
         resultado = cursor.fetchone()
 
         if resultado:
-            logger.info(f"A tabela '{nome_tabela}' já existe. Excluindo a tabela antiga...")
+            logger.info(
+                f"A tabela '{nome_tabela}' já existe. Excluindo a tabela antiga...")
             cursor.execute(f"DROP TABLE {nome_tabela}")
 
         with open(arquivo, "r", encoding="utf-8") as arquivo_csv:
             ler_csv = csv.reader(arquivo_csv, delimiter=delimitador)
-            header = next(ler_csv) 
+            header = next(ler_csv)
 
             logger.info(f"Delimitador CSV detectado: '{delimitador}'")
             logger.info(f"Cabeçalho: {header}")
 
             normaliza_header = [normaliza_coluna(coluna) for coluna in header]
 
-            cria_tabela_query = f"CREATE TABLE {nome_tabela} ({', '.join([f'{coluna} VARCHAR(255)' for coluna in normaliza_header])})"
+            cria_tabela_query = f"CREATE TABLE {nome_tabela} ({', '.join(
+                [f'{coluna} VARCHAR(255)' for coluna in normaliza_header])})"
             logger.info(f"Executando SQL: {cria_tabela_query}")
             cursor.execute(cria_tabela_query)
             logger.info("Criação de tabela concluída.")
@@ -68,7 +74,8 @@ def ingestao_dados(arquivo):
             for linha in ler_csv:
                 colunas = ', '.join(normaliza_header)
                 valores = ', '.join(['%s'] * len(normaliza_header))
-                sql = f"INSERT INTO {nome_tabela} ({colunas}) VALUES ({valores})"
+                sql = f"INSERT INTO {
+                    nome_tabela} ({colunas}) VALUES ({valores})"
                 cursor.execute(sql, tuple(linha))
 
         conexao.commit()
@@ -88,7 +95,8 @@ def ingestao_dados(arquivo):
 
 
 if __name__ == "__main__":
-    arquivos = [os.path.join(parametros.pasta, f) for f in os.listdir(parametros.pasta) if os.path.isfile(os.path.join(parametros.pasta, f))]
+    arquivos = [os.path.join(parametros.pasta, f) for f in os.listdir(
+        parametros.pasta) if os.path.isfile(os.path.join(parametros.pasta, f))]
     for arquivo in arquivos:
         if any(arquivo.endswith(ext) for ext in parametros.extensoes):
             logger.info(f"Ingerindo arquivo: {arquivo}")
